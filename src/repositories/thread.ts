@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 
 import Database from "better-sqlite3";
@@ -73,9 +74,16 @@ export class SQLiteThreadRepository implements ThreadRepository {
   constructor(baseDir: string = ".terminal-ai-sessions") {
     // Create base directory in user's home directory
     const homeDir = process.env.HOME || process.env.USERPROFILE || "";
-    const dbPath = path.join(homeDir, baseDir, "terminal-ai.db");
+    const sessionDirPath = path.join(homeDir, baseDir);
+    const dbPath = path.join(sessionDirPath, "terminal-ai.db");
 
     try {
+      // Create directory if it doesn't exist
+      if (!fs.existsSync(sessionDirPath)) {
+        logger.debug(`Creating directory: ${sessionDirPath}`);
+        fs.mkdirSync(sessionDirPath, { recursive: true });
+      }
+
       this.db = new Database(dbPath);
       this.initDatabase();
     } catch (error) {
